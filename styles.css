@@ -1,0 +1,111 @@
+.mod-ruleofthree {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.mod-ruleofthree__intro {
+    margin-bottom: 1.5rem;
+}
+
+.mod-ruleofthree__tip {
+    padding: .85rem 1rem;
+    margin-bottom: 1.25rem;
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-radius: .75rem;
+    background: var(--bs-light, #f8f9fa);
+}
+
+.mod-ruleofthree__simple-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.mod-ruleofthree__field {
+    display: block;
+    padding: 1rem;
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-radius: .85rem;
+    background: #fff;
+}
+
+.mod-ruleofthree__label {
+    display: block;
+    margin-bottom: .5rem;
+    font-size: .875rem;
+    font-weight: 600;
+}
+
+.mod-ruleofthree__input {
+    min-height: 3.2rem;
+    font-size: 1.35rem;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+}
+
+.mod-ruleofthree__table-wrap {
+    overflow-x: auto;
+}
+
+.mod-ruleofthree__table th,
+.mod-ruleofthree__table td {
+    vertical-align: middle;
+}
+
+.mod-ruleofthree__table .mod-ruleofthree__input {
+    min-width: 150px;
+}
+
+.mod-ruleofthree__calculation {
+    margin-top: 1.5rem;
+    padding: 1.25rem;
+    border: 1px solid var(--bs-border-color, #dee2e6);
+    border-radius: .85rem;
+    background: #fff;
+}
+
+.mod-ruleofthree__calculation h3 {
+    margin-top: 0;
+    margin-bottom: 1rem;
+    font-size: 1.15rem;
+}
+
+.mod-ruleofthree__steps {
+    display: grid;
+    gap: .75rem;
+}
+
+.mod-ruleofthree__step {
+    padding: .8rem 1rem;
+    border-radius: .65rem;
+    background: var(--bs-light, #f8f9fa);
+}
+
+.mod-ruleofthree__step-label {
+    display: block;
+    margin-bottom: .25rem;
+    font-size: .78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .03em;
+}
+
+.mod-ruleofthree__formula {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+    font-size: 1rem;
+    overflow-wrap: anywhere;
+}
+
+.mod-ruleofthree__formula-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: .75rem;
+    margin-top: .75rem;
+}
+
+@media (max-width: 600px) {
+    .mod-ruleofthree__simple-grid,
+    .mod-ruleofthree__formula-grid {
+        grid-template-columns: 1fr;
+    }
+}

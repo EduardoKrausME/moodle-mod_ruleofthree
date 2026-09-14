@@ -1,0 +1,270 @@
+// This file is part of Moodle - http://moodle.org/
+//
+// Moodle is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// Moodle is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
+
+/**
+ * calculator.js
+ *
+ * @package   mod_ruleofthree
+ * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+define(["jquery"], function($) {
+    const SELECTOR = "[data-region='ruleofthree']";
+
+    const parseNumber = function(value) {
+        if (typeof value === "number") {
+            return value;
+        }
+
+        let normalised = String(value).trim().replace(/\s+/g, "");
+        const comma = normalised.lastIndexOf(",");
+        const dot = normalised.lastIndexOf(".");
+
+        if (comma !== -1 && dot !== -1) {
+            if (comma > dot) {
+                normalised = normalised.replace(/\./g, "").replace(",", ".");
+            } else {
+                normalised = normalised.replace(/,/g, "");
+            }
+        } else if (comma !== -1) {
+            normalised = normalised.replace(",", ".");
+        }
+
+        const number = Number(normalised);
+        return Number.isFinite(number) ? number : NaN;
+    };
+
+    const clean = function(number, precision) {
+        if (!Number.isFinite(number)) {
+            return "";
+        }
+
+        const rounded = Number(number.toFixed(precision));
+        return rounded.toLocaleString(undefined, {
+            maximumFractionDigits: precision,
+            useGrouping: false
+        });
+    };
+
+    const html = function(value) {
+        return $("<div>").text(value).html();
+    };
+
+    const step = function(label, formula) {
+        return "<div class='mod-ruleofthree__step'>" +
+            "<span class='mod-ruleofthree__step-label'>" + html(label) + "</span>" +
+            "<div class='mod-ruleofthree__formula'>" + html(formula) + "</div>" +
+            "</div>";
+    };
+
+    const showError = function($root) {
+        $root.find("[data-region='error']")
+            .text(M.util.get_string("invalidnumber", "mod_ruleofthree"))
+            .removeClass("d-none");
+    };
+
+    const hideError = function($root) {
+        $root.find("[data-region='error']").addClass("d-none").text("");
+    };
+
+    const syncValues = function($root, keys, state, changedKey, newValue, precision) {
+        const index = keys.indexOf(changedKey);
+        const previous = state[index];
+
+        if (!Number.isFinite(newValue) || newValue === 0 || !Number.isFinite(previous) || previous === 0) {
+            return false;
+        }
+
+        const scale = newValue / previous;
+        state[index] = newValue;
+
+        state.forEach(function(value, currentIndex) {
+            if (currentIndex !== index) {
+                state[currentIndex] = value * scale;
+            }
+        });
+
+        keys.forEach(function(key, currentIndex) {
+            $root.find("[data-value='" + key + "']").val(clean(state[currentIndex], precision));
+        });
+
+        return true;
+    };
+
+    const renderSimple = function($root, state, relation, precision) {
+        const a = state[0];
+        const b = state[1];
+        const c = state[2];
+        const d = state[3];
+        const f = function(value) {
+            return clean(value, precision);
+        };
+
+        let content = "<div class='mod-ruleofthree__steps'>";
+
+        if (relation === "inverse") {
+            content += step(
+                M.util.get_string("equation", "mod_ruleofthree"),
+                "A₁ × B₁ = A₂ × B₂"
+            );
+            content += step(
+                M.util.get_string("substitution", "mod_ruleofthree"),
+                f(a) + " × " + f(b) + " = " + f(c) + " × " + f(d)
+            );
+            content += "<div class='mod-ruleofthree__formula-grid'>";
+            content += step("A₁", "(" + f(c) + " × " + f(d) + ") ÷ " + f(b) + " = " + f(a));
+            content += step("B₁", "(" + f(c) + " × " + f(d) + ") ÷ " + f(a) + " = " + f(b));
+            content += step("A₂", "(" + f(a) + " × " + f(b) + ") ÷ " + f(d) + " = " + f(c));
+            content += step("B₂", "(" + f(a) + " × " + f(b) + ") ÷ " + f(c) + " = " + f(d));
+            content += "</div>";
+        } else {
+            content += step(
+                M.util.get_string("equation", "mod_ruleofthree"),
+                "A₁ ÷ B₁ = A₂ ÷ B₂  →  A₁ × B₂ = B₁ × A₂"
+            );
+            content += step(
+                M.util.get_string("substitution", "mod_ruleofthree"),
+                f(a) + " × " + f(d) + " = " + f(b) + " × " + f(c)
+            );
+            content += "<div class='mod-ruleofthree__formula-grid'>";
+            content += step("A₁", "(" + f(b) + " × " + f(c) + ") ÷ " + f(d) + " = " + f(a));
+            content += step("B₁", "(" + f(a) + " × " + f(d) + ") ÷ " + f(c) + " = " + f(b));
+            content += step("A₂", "(" + f(a) + " × " + f(d) + ") ÷ " + f(b) + " = " + f(c));
+            content += step("B₂", "(" + f(b) + " × " + f(c) + ") ÷ " + f(a) + " = " + f(d));
+            content += "</div>";
+        }
+
+        content += step(
+            M.util.get_string("proportionmaintained", "mod_ruleofthree"),
+            f(a) + " : " + f(b) + "  ↔  " + f(c) + " : " + f(d)
+        );
+        content += "</div>";
+
+        $root.find("[data-region='calculation']").html(content);
+    };
+
+    const renderCompound = function($root, state, relationA, relationB, precision) {
+        const a1 = state[0];
+        const a2 = state[1];
+        const b1 = state[2];
+        const b2 = state[3];
+        const r1 = state[4];
+        const r2 = state[5];
+        const f = function(value) {
+            return clean(value, precision);
+        };
+
+        const factorA = relationA === "inverse" ? a1 / a2 : a2 / a1;
+        const factorB = relationB === "inverse" ? b1 / b2 : b2 / b1;
+        const expressionA = relationA === "inverse"
+            ? f(a1) + " ÷ " + f(a2)
+            : f(a2) + " ÷ " + f(a1);
+        const expressionB = relationB === "inverse"
+            ? f(b1) + " ÷ " + f(b2)
+            : f(b2) + " ÷ " + f(b1);
+
+        let content = "<div class='mod-ruleofthree__steps'>";
+        content += step(
+            M.util.get_string("factor", "mod_ruleofthree") + " A",
+            expressionA + " = " + f(factorA) + " (" + M.util.get_string(relationA, "mod_ruleofthree") + ")"
+        );
+        content += step(
+            M.util.get_string("factor", "mod_ruleofthree") + " B",
+            expressionB + " = " + f(factorB) + " (" + M.util.get_string(relationB, "mod_ruleofthree") + ")"
+        );
+        content += step(
+            M.util.get_string("equation", "mod_ruleofthree"),
+            "R₂ = R₁ × fator A × fator B"
+        );
+        content += step(
+            M.util.get_string("substitution", "mod_ruleofthree"),
+            "R₂ = " + f(r1) + " × " + f(factorA) + " × " + f(factorB)
+        );
+        content += step(
+            M.util.get_string("result", "mod_ruleofthree"),
+            "R₂ = " + f(r2)
+        );
+        content += "</div>";
+
+        $root.find("[data-region='calculation']").html(content);
+    };
+
+    const initSimple = function($root, config) {
+        const keys = ["a", "b", "c", "d"];
+        const state = config.values.map(Number);
+        const precision = Number(config.precision);
+
+        renderSimple($root, state, config.relation, precision);
+
+        $root.on("change input", ".mod-ruleofthree__input", function(event) {
+            const key = $(event.currentTarget).data("value");
+            if (keys.indexOf(key) === -1) {
+                return;
+            }
+
+            const newValue = parseNumber($(event.currentTarget).val());
+            if (!syncValues($root, keys, state, key, newValue, precision)) {
+                showError($root);
+                return;
+            }
+
+            hideError($root);
+            renderSimple($root, state, config.relation, precision);
+        });
+    };
+
+    const initCompound = function($root, config) {
+        const keys = ["a1", "a2", "b1", "b2", "r1", "r2"];
+        const state = config.values.map(Number);
+        const precision = Number(config.precision);
+
+        renderCompound($root, state, config.relationA, config.relationB, precision);
+
+        $root.on("change input", ".mod-ruleofthree__input", function(event) {
+            const key = $(event.currentTarget).data("value");
+            if (keys.indexOf(key) === -1) {
+                return;
+            }
+
+            const newValue = parseNumber($(event.currentTarget).val());
+            if (!syncValues($root, keys, state, key, newValue, precision)) {
+                showError($root);
+                return;
+            }
+
+            hideError($root);
+            renderCompound($root, state, config.relationA, config.relationB, precision);
+        });
+    };
+
+    return {
+        init: function(config) {
+            const $root = $(SELECTOR).first();
+            if (!$root.length) {
+                return;
+            }
+
+            config.simple.precision = config.precision;
+            config.compound.precision = config.precision;
+
+            if (config.mode === "compound") {
+                initCompound($root, config.compound);
+            } else {
+                initSimple($root, config.simple);
+            }
+        }
+    };
+});
