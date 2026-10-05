@@ -16,12 +16,15 @@
 /**
  * calculator.js
  *
- * @package   mod_ruleofthree
+ * @module     mod_ruleofthree/calculator
+ * @package    mod_ruleofthree
  * @copyright 2026 Eduardo Kraus {@link https://eduardokraus.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 define(["jquery"], function($) {
+    "use strict";
+
     const SELECTOR = "[data-region='ruleofthree']";
 
     const parseNumber = function(value) {
