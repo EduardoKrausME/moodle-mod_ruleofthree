@@ -30,12 +30,21 @@ $course = get_course($cm->course);
 $activity = $DB->get_record("ruleofthree", ["id" => $cm->instance], "*", MUST_EXIST);
 
 require_login($course, true, $cm);
-require_capability("mod/ruleofthree:view", context_module::instance($cm->id));
+$context = context_module::instance($cm->id);
+require_capability("mod/ruleofthree:view", $context);
+
+$event = \mod_ruleofthree\event\course_module_viewed::create([
+    "objectid" => $activity->id,
+    "context" => $context,
+]);
+$event->add_record_snapshot("course", $course);
+$event->add_record_snapshot("ruleofthree", $activity);
+$event->trigger();
 
 $PAGE->set_url("/mod/ruleofthree/view.php", ["id" => $cm->id]);
 $PAGE->set_title(format_string($activity->name));
 $PAGE->set_heading(format_string($course->fullname));
-$PAGE->set_context(context_module::instance($cm->id));
+$PAGE->set_context($context);
 
 $completion = new completion_info($course);
 $completion->set_module_viewed($cm);
