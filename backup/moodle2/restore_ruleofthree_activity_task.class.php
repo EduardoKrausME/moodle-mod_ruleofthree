@@ -53,7 +53,9 @@ class restore_ruleofthree_activity_task extends restore_activity_task {
      * @return array
      */
     public static function define_decode_contents(): array {
-        return [];
+        return [
+            new restore_decode_content("ruleofthree", ["intro"], "ruleofthree"),
+        ];
     }
 
     /**
@@ -62,6 +64,9 @@ class restore_ruleofthree_activity_task extends restore_activity_task {
      * @return array
      */
     public static function define_decode_rules(): array {
-        return [];
+        return [
+            new restore_decode_rule("RULEOFTHREEINDEX", "/mod/ruleofthree/index.php?id=$1", "course"),
+            new restore_decode_rule("RULEOFTHREEVIEWBYID", "/mod/ruleofthree/view.php?id=$1", "course_module"),
+        ];
     }
 }
