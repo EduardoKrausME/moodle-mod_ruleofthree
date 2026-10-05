@@ -54,6 +54,20 @@ class backup_ruleofthree_activity_task extends backup_activity_task {
      * @return string
      */
     public static function encode_content_links($content): string {
+        global $CFG;
+
+        $base = preg_quote($CFG->wwwroot . "/mod/ruleofthree", "#");
+
+        $pattern = "#(" . $base . "/index\\.php\\?id=)([0-9]+)#";
+        $content = preg_replace($pattern, '$@RULEOFTHREEINDEX*$2@
+}
+, $content);
+
+        $pattern = "#(" . $base . "/view\\.php\\?id=)([0-9]+)#";
+        $content = preg_replace($pattern, '$@RULEOFTHREEVIEWBYID*$2@
+}
+, $content);
+
         return $content;
     }
 }
