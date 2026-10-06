@@ -68,6 +68,11 @@ class backup_ruleofthree_activity_task extends backup_activity_task {
 }
 , $content);
 
+        /**
+         * Property content.
+         *
+         * @var return
+         */
         return $content;
     }
 }
