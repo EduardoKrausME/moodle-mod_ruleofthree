@@ -24,8 +24,6 @@
 
 namespace mod_ruleofthree\event;
 
-defined('MOODLE_INTERNAL') || die;
-
 /**
  * Event triggered when a Rule of three activity is viewed.
  */
